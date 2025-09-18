@@ -161,6 +161,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { supabase } from '../lib/supabase.js'
 import { useRouter } from 'vue-router'
+import { extractPDFText, isPDFFile } from '../utils/pdfExtractor.js'
 
 const router = useRouter()
 
@@ -289,9 +290,24 @@ async function uploadDocuments() {
         // 读取文件内容
         let content = ''
 
-        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-          // PDF文件：保存基本信息
-          content = `[PDF文档]\n\n文件名: ${file.name}\n文件大小: ${formatFileSize(file.size)}\n上传时间: ${new Date().toLocaleString()}\n\n此文档可在AI对话中使用。`
+        if (isPDFFile(file)) {
+          // PDF文件：提取文本内容
+          try {
+            window.$toast?.info(`正在解析PDF文档...`)
+            content = await extractPDFText(file)
+
+            // 如果内容太短，说明可能是扫描版PDF
+            if (content.length < 100) {
+              content = `[PDF文档 - 可能是扫描版]\n\n文件名: ${file.name}\n\n注意：此PDF可能是扫描版，无法提取文本内容。`
+              window.$toast?.warning('PDF可能是扫描版，文本提取有限')
+            } else {
+              window.$toast?.success(`PDF解析成功！提取了${content.length}个字符`)
+            }
+          } catch (error) {
+            console.error('PDF提取失败:', error)
+            content = `[PDF文档 - 提取失败]\n\n文件名: ${file.name}\n错误: ${error.message}`
+            window.$toast?.error('PDF文本提取失败')
+          }
         } else {
           // 文本文件：读取内容
           content = await readFileAsText(file)
