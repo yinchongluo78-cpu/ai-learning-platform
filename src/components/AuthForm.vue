@@ -592,7 +592,7 @@ select.glow-input {
   letter-spacing: 2px;
 }
 
-/* 响应式设计 */
+/* 响应式设计 - 改进移动端体验 */
 @media (max-width: 768px) {
   .brand-title {
     top: 20px;
@@ -600,11 +600,27 @@ select.glow-input {
     font-size: 32px;
     letter-spacing: 2px;
   }
+
+  .auth-container {
+    padding: 20px;
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: 400px;
+  }
 }
 
 @media (max-width: 480px) {
+  .auth-container {
+    min-height: 100vh;
+    padding: 15px;
+  }
+
   .auth-card {
     padding: 30px 20px;
+    margin: 0;
+    width: 100%;
   }
 
   .form-row {
@@ -623,6 +639,30 @@ select.glow-input {
 
   .subtitle {
     font-size: 12px;
+  }
+
+  /* 修复移动端输入框问题 */
+  .tech-input {
+    font-size: 16px !important; /* 防止iOS自动缩放 */
+    padding: 14px 18px;
+    -webkit-appearance: none;
+  }
+
+  .tech-button {
+    padding: 14px;
+    font-size: 16px;
+    touch-action: manipulation; /* 优化触摸响应 */
+  }
+
+  /* 防止键盘弹出时布局错乱 */
+  .auth-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 </style>
