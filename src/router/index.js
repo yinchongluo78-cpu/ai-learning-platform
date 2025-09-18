@@ -6,7 +6,8 @@ import AuthForm from '../components/AuthForm.vue'
 import Dashboard from '../views/Dashboard.vue'
 import Chat from '../views/Chat.vue'
 // import Knowledge from '../views/Knowledge.vue'  // 旧版本
-import KnowledgeOSS from '../views/KnowledgeOSS.vue'  // 新版本：支持直传OSS
+// import KnowledgeOSS from '../views/KnowledgeOSS.vue'  // OSS直传版本（连接超时）
+import KnowledgeSimple from '../views/KnowledgeSimple.vue'  // 简化版本：通过服务器上传
 import Profile from '../views/Profile.vue'
 import TestOSS from '../views/TestOSS.vue'
 import TestOSSSimple from '../views/TestOSSSimple.vue'
@@ -41,7 +42,7 @@ const routes = [
       {
         path: 'knowledge',
         name: 'Knowledge',
-        component: KnowledgeOSS  // 使用新版本
+        component: KnowledgeSimple  // 使用简化版本
       },
       {
         path: 'profile',
