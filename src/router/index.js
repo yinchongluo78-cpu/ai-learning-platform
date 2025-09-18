@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { supabase } from '../lib/supabase.js'
 
-// 导入页面组件
-import AuthForm from '../components/AuthForm.vue'
-import Dashboard from '../views/Dashboard.vue'
-import Chat from '../views/Chat.vue'
+// 导入页面组件 - 使用懒加载
+const AuthForm = () => import('../components/AuthForm.vue')
+const Dashboard = () => import('../views/Dashboard.vue')
+const Chat = () => import('../views/Chat.vue')
 // import Knowledge from '../views/Knowledge.vue'  // 旧版本
 // import KnowledgeOSS from '../views/KnowledgeOSS.vue'  // OSS直传版本（连接超时）
 // import KnowledgeSimple from '../views/KnowledgeSimple.vue'  // 简化版本：通过服务器上传
-import KnowledgeLocal from '../views/KnowledgeLocal.vue'  // 最简版本：无外部依赖
-import Profile from '../views/Profile.vue'
-import TestOSS from '../views/TestOSS.vue'
-import TestOSSSimple from '../views/TestOSSSimple.vue'
+const KnowledgeLocal = () => import('../views/KnowledgeLocal.vue')  // 最简版本：无外部依赖
+const Profile = () => import('../views/Profile.vue')
+const TestOSS = () => import('../views/TestOSS.vue')
+const TestOSSSimple = () => import('../views/TestOSSSimple.vue')
 
 const routes = [
   {

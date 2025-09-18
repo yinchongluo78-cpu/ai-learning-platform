@@ -1,12 +1,24 @@
 /**
  * 客户端PDF文本提取工具
  * 使用PDF.js在浏览器中直接提取PDF文本
+ * 支持按需加载，减少初始包大小
  */
 
-import * as pdfjsLib from 'pdfjs-dist';
+let pdfjsLib = null;
 
-// 配置PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// 懒加载PDF.js库
+async function loadPDFJS() {
+  if (!pdfjsLib) {
+    // 动态导入PDF.js
+    pdfjsLib = await import('pdfjs-dist');
+
+    // 配置PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+    console.log('PDF.js已动态加载');
+  }
+  return pdfjsLib;
+}
 
 /**
  * 从PDF文件提取文本
@@ -15,11 +27,14 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.j
  */
 export async function extractPDFText(file) {
   try {
+    // 懒加载PDF.js
+    const pdfjs = await loadPDFJS();
+
     // 将文件转换为ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
 
     // 加载PDF文档
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const loadingTask = pdfjs.getDocument({ data: arrayBuffer });
     const pdf = await loadingTask.promise;
 
     console.log(`PDF加载成功，共${pdf.numPages}页`);

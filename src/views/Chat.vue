@@ -310,6 +310,7 @@ import {
 } from '../utils/stats.js'
 import { initDatabase } from '../utils/initDatabase.js'
 import { extractTextFromPDF, isPDFFile, formatFileSize } from '../utils/pdfParser.js'
+import { apiWrapper } from '../utils/errorHandler.js'
 
 // 响应式数据
 const messages = ref([])

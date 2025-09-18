@@ -32,7 +32,8 @@ function getIcon(type) {
     success: '✅',
     error: '❌',
     warning: '⚠️',
-    info: 'ℹ️'
+    info: 'ℹ️',
+    loading: '⏳'
   }
   return icons[type] || icons.info
 }
@@ -69,6 +70,10 @@ function removeToast(id) {
 
 // Toast管理器
 class ToastManager {
+  constructor() {
+    this.loadingToasts = new Map() // 存储loading类型的toast
+  }
+
   show(message, type = 'info', duration = 3000) {
     return addToast({ type, message, duration })
   }
@@ -89,12 +94,37 @@ class ToastManager {
     return addToast({ type: 'info', message, duration })
   }
 
+  // 显示加载提示（不自动消失）
+  loading(message, key) {
+    const toastId = addToast({
+      type: 'loading',
+      message,
+      duration: 0 // 不自动消失
+    })
+
+    if (key) {
+      this.loadingToasts.set(key, toastId)
+    }
+
+    return toastId
+  }
+
+  // 关闭特定的toast
+  dismiss(key) {
+    if (key && this.loadingToasts.has(key)) {
+      const toastId = this.loadingToasts.get(key)
+      removeToast(toastId)
+      this.loadingToasts.delete(key)
+    }
+  }
+
   remove(id) {
     removeToast(id)
   }
 
   clear() {
     toasts.value = []
+    this.loadingToasts.clear()
   }
 }
 
