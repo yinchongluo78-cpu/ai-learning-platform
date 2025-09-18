@@ -6,32 +6,74 @@ import { supabase } from '../lib/supabase.js'
  */
 
 /**
+ * 将文件转换为Base64
+ * @param {File} file - 文件对象
+ * @returns {Promise<string>} - Base64字符串
+ */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      // 移除data:xxx;base64,前缀
+      const base64 = reader.result.split(',')[1]
+      resolve(base64)
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+/**
  * 从PDF文件中提取文本内容
  * @param {File} file - PDF文件对象
  * @returns {Promise<Object>} - 包含文本和元数据的对象
  */
 export async function extractTextFromPDF(file) {
   try {
-    // 使用本地Python API
-    const functionUrl = 'http://localhost:5001/parse-pdf'
+    // 检查是否在生产环境
+    const isProduction = window.location.hostname !== 'localhost'
 
-    // 创建FormData
-    const formData = new FormData()
-    formData.append('file', file)
+    if (isProduction) {
+      // 生产环境：使用Vercel API
+      const base64Data = await fileToBase64(file)
 
-    // 调用Python API
-    const response = await fetch(functionUrl, {
-      method: 'POST',
-      body: formData
-    })
+      const response = await fetch('/api/parse-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ base64Data })
+      })
 
-    const result = await response.json()
+      const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error || 'PDF解析失败')
+      if (!result.success) {
+        throw new Error(result.error || 'PDF解析失败')
+      }
+
+      return result.data
+    } else {
+      // 开发环境：尝试使用本地Python API
+      const functionUrl = 'http://localhost:5001/parse-pdf'
+
+      // 创建FormData
+      const formData = new FormData()
+      formData.append('file', file)
+
+      // 调用Python API
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        body: formData
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'PDF解析失败')
+      }
+
+      return result.data
     }
-
-    return result.data
 
   } catch (error) {
     console.error('PDF解析失败:', error)

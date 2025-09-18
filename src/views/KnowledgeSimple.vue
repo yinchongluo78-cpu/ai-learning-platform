@@ -318,8 +318,22 @@ async function uploadDocuments() {
         let content = ''
 
         if (isPDFFile(file)) {
-          // PDF文件暂时只保存文件信息（不依赖本地服务）
-          content = `[PDF文档: ${file.name}]\n\n文件大小: ${formatFileSize(file.size)}\n\n注意：PDF内容提取需要后端服务支持。`
+          // 尝试提取PDF文本内容
+          try {
+            window.$toast?.info('正在解析PDF文档...')
+            const pdfResult = await extractTextFromPDF(file)
+            content = pdfResult.text || `[PDF文档: ${file.name}]`
+
+            // 如果成功提取了文本，显示页数信息
+            if (pdfResult.pageCount) {
+              window.$toast?.success(`PDF解析成功！共${pdfResult.pageCount}页`)
+            }
+          } catch (pdfError) {
+            console.error('PDF解析错误:', pdfError)
+            // 如果解析失败，保存基本信息
+            content = `[PDF文档: ${file.name}]\n\n文件大小: ${formatFileSize(file.size)}`
+            window.$toast?.warning('PDF解析失败，已保存文件信息')
+          }
         } else {
           // 处理文本文件
           content = await readFileAsText(file)

@@ -299,6 +299,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import { supabase } from '../lib/supabase.js'
+import { useRoute } from 'vue-router'
 import {
   updateUserStats,
   incrementConversations,
@@ -360,6 +361,9 @@ const deleteDialog = ref({
 
 const renameInput = ref(null)
 
+// 获取路由
+const route = useRoute()
+
 // 初始化
 onMounted(async () => {
   // 初始化数据库表
@@ -376,6 +380,11 @@ onMounted(async () => {
 
   // 初始化用户统计
   await initUserStats()
+
+  // 检查是否有文档上下文参数
+  if (route.query.context) {
+    await loadDocumentContext(route.query.context)
+  }
 
   // 测试数据库权限
   testDatabaseAccess()
@@ -403,6 +412,54 @@ async function initUserStats() {
     }
   } catch (error) {
     console.error('初始化用户统计失败:', error)
+  }
+}
+
+// 加载文档上下文
+async function loadDocumentContext(documentId) {
+  try {
+    // 从数据库加载文档
+    const { data: document, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('id', documentId)
+      .single()
+
+    if (error || !document) {
+      console.error('加载文档失败:', error)
+      showToast('文档加载失败', 'error')
+      return
+    }
+
+    // 将文档添加到活动文档列表
+    activeDocuments.value = [{
+      id: document.id,
+      filename: document.filename,
+      content: document.content,
+      created_at: document.created_at
+    }]
+
+    // 启用RAG模式
+    enableRAG.value = true
+    localStorage.setItem('enableRAG', 'true')
+
+    // 显示提示
+    showToast(`已加载文档: ${document.filename}`, 'success')
+
+    // 自动开始新对话
+    await startNewConversation()
+
+    // 添加系统消息提示已加载文档
+    messages.value.push({
+      id: Date.now(),
+      role: 'assistant',
+      content: `📄 已加载文档: **${document.filename}**\n\n您现在可以基于这个文档进行提问和对话。`,
+      timestamp: new Date().toISOString()
+    })
+
+  } catch (error) {
+    console.error('加载文档上下文失败:', error)
+    showToast('文档加载失败', 'error')
   }
 }
 
