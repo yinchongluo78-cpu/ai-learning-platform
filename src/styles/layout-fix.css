@@ -1,0 +1,162 @@
+/* Global layout fixes to prevent page shrinking */
+
+/* Reset html and body to ensure full width */
+html {
+  width: 100%;
+  height: 100%;
+  /* Disable horizontal scroll, only allow vertical */
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  width: 100%;
+  min-width: 100%;
+  margin: 0;
+  padding: 0;
+  /* Disable horizontal scroll, only allow vertical */
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Prevent horizontal scrollbar from appearing */
+  max-width: 100vw;
+}
+
+/* Ensure root app element maintains full width without overflow */
+#app {
+  width: 100%;
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Fix for flex containers */
+.dashboard-container,
+.chat-page,
+.knowledge-page,
+.profile-page {
+  width: 100%;
+  min-width: 100%;
+}
+
+/* Prevent flex items from shrinking */
+.main-content,
+.chat-content,
+.chat-main,
+.document-list,
+.profile-content {
+  min-width: 0; /* Allow flex items to shrink below content size */
+  width: 100%;
+}
+
+/* Stabilize sidebar widths */
+.sidebar {
+  flex-shrink: 0; /* Prevent sidebar from shrinking */
+  width: 200px;
+}
+
+.chat-history {
+  flex-shrink: 0; /* Prevent chat history from shrinking */
+  width: 180px;
+}
+
+/* Fix for message containers */
+.messages-container {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Prevent content overflow from affecting layout */
+pre, code {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Fix for modal overlays */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Ensure toast notifications don't affect layout */
+.toast-container {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.toast {
+  pointer-events: auto;
+}
+
+/* Add padding to account for scrollbar width and aesthetic spacing */
+.chat-header,
+.knowledge-header,
+.profile-header {
+  padding-right: 60px !important; /* Extra padding for scrollbar and visual balance */
+  margin-right: 20px; /* Additional margin for aesthetic spacing */
+  border-radius: 0 16px 0 0; /* Rounded corner for softer appearance */
+}
+
+/* Fix for chat history and sidebars */
+.chat-history,
+.sidebar {
+  /* Ensure content doesn't overlap with scrollbar */
+  padding-right: 8px;
+}
+
+/* Fix for main content areas with aesthetic spacing */
+.messages-container,
+.document-list,
+.profile-content {
+  /* Add right padding for scrollbar and visual breathing room */
+  padding-right: 48px !important;
+  /* Add margin for better visual balance */
+  margin-right: 12px;
+}
+
+/* Fix for input areas with better spacing */
+.input-area {
+  padding-right: 48px !important;
+  margin-right: 20px;
+  border-radius: 0 0 16px 0; /* Rounded corner for consistency */
+}
+
+/* Fix for header action buttons */
+.header-actions {
+  margin-right: 16px;
+}
+
+/* Custom scrollbar with better aesthetics */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  margin: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.3);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5);
+  background-clip: content-box;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.3) rgba(0, 0, 0, 0.1);
+}
