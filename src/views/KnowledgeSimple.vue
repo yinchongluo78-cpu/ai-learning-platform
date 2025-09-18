@@ -70,7 +70,7 @@
             <h3>{{ doc.filename }}</h3>
             <p class="doc-preview">{{ getDocumentPreview(doc.content) }}</p>
             <div class="doc-meta">
-              <span>{{ formatFileSize(doc.size) }}</span>
+              <span v-if="doc.size">{{ formatFileSize(doc.size) }}</span>
               <span>{{ formatTime(doc.created_at) }}</span>
             </div>
           </div>
@@ -318,24 +318,20 @@ async function uploadDocuments() {
         let content = ''
 
         if (isPDFFile(file)) {
-          // 处理PDF文件
-          window.$toast?.info('正在解析PDF文档...')
-          const pdfResult = await extractTextFromPDF(file)
-          content = pdfResult.text
+          // PDF文件暂时只保存文件信息（不依赖本地服务）
+          content = `[PDF文档: ${file.name}]\n\n文件大小: ${formatFileSize(file.size)}\n\n注意：PDF内容提取需要后端服务支持。`
         } else {
           // 处理文本文件
           content = await readFileAsText(file)
         }
 
-        // 保存到数据库
+        // 保存到数据库（移除size字段以避免错误）
         const { data: document, error } = await supabase
           .from('documents')
           .insert({
             user_id: user.id,
             filename: file.name,
             content: content,
-            size: file.size,
-            type: file.type || 'application/octet-stream',
             is_public: makePublic.value,
             created_at: new Date().toISOString()
           })
