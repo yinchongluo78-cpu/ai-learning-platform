@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>调试文档内容</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>调试文档内容</h1>
+    <button onclick="checkDocuments()">检查数据库中的文档</button>
+    <div id="result"></div>
+
+    <script>
+        const supabaseUrl = 'https://tgbcptwbmcqgpyopnqwf.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnYmNwdHdibWNxZ3B5b3BucXdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5ODI5NDYsImV4cCI6MjA0OTU1ODk0Nn0.qGkmYQZElSFxB4BhzUUXcUCEy7jeCOEoGvzklKKZQIM'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+        async function checkDocuments() {
+            try {
+                // 获取当前用户
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) {
+                    document.getElementById('result').innerHTML = '<p>用户未登录</p>'
+                    return
+                }
+
+                // 查询用户信息
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('email', user.email)
+                    .single()
+
+                if (!userData) {
+                    document.getElementById('result').innerHTML = '<p>用户数据未找到</p>'
+                    return
+                }
+
+                // 查询文档
+                const { data: documents, error } = await supabase
+                    .from('documents')
+                    .select('*')
+                    .eq('user_id', userData.id)
+                    .order('created_at', { ascending: false })
+
+                if (error) {
+                    document.getElementById('result').innerHTML = `<p>错误: ${error.message}</p>`
+                    return
+                }
+
+                let html = `<h2>找到 ${documents.length} 个文档</h2>`
+
+                documents.forEach((doc, index) => {
+                    html += `
+                        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                            <h3>文档 ${index + 1}: ${doc.filename}</h3>
+                            <p><strong>ID:</strong> ${doc.id}</p>
+                            <p><strong>创建时间:</strong> ${doc.created_at}</p>
+                            <p><strong>内容长度:</strong> ${doc.content ? doc.content.length : 0} 字符</p>
+                            <p><strong>内容是否为空:</strong> ${!doc.content ? '是' : '否'}</p>
+                            <p><strong>内容预览:</strong></p>
+                            <pre style="background: #f5f5f5; padding: 10px; max-height: 200px; overflow: auto;">
+${doc.content ? doc.content.substring(0, 500) + (doc.content.length > 500 ? '...' : '') : '内容为空'}
+                            </pre>
+                        </div>
+                    `
+                })
+
+                document.getElementById('result').innerHTML = html
+
+                // 同时打印到控制台
+                console.log('文档数据:', documents)
+
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p>检查失败: ${error.message}</p>`
+                console.error('检查文档失败:', error)
+            }
+        }
+    </script>
+</body>
+</html>

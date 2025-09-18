@@ -735,7 +735,23 @@ async function sendMessage() {
       console.log('🔍 RAG模式: 使用已加载的文档...')
       // 直接使用activeDocuments中的内容
       relevantDocs = activeDocuments.value.map(doc => {
-        const docInfo = `文档: ${doc.filename}\n内容:\n${doc.content || '[文档内容]'}`
+        console.log('🔍 检查文档内容:', {
+          filename: doc.filename,
+          contentLength: doc.content ? doc.content.length : 0,
+          hasContent: !!doc.content
+        })
+
+        if (!doc.content || doc.content.trim() === '') {
+          console.error('❌ 文档内容为空:', doc.filename)
+          window.$toast?.error(`文档 ${doc.filename} 内容为空，请重新上传`)
+          return `文档: ${doc.filename}\n⚠️ 错误：文档内容为空，无法使用`
+        }
+
+        const docInfo = `文档: ${doc.filename}\n内容:\n${doc.content}`
+        console.log('✅ 文档内容已准备:', {
+          filename: doc.filename,
+          contentPreview: doc.content.substring(0, 100) + '...'
+        })
         return docInfo
       })
       console.log('📋 使用文档数量:', relevantDocs.length)
