@@ -318,22 +318,9 @@ async function uploadDocuments() {
         let content = ''
 
         if (isPDFFile(file)) {
-          // 尝试提取PDF文本内容
-          try {
-            window.$toast?.info('正在解析PDF文档...')
-            const pdfResult = await extractTextFromPDF(file)
-            content = pdfResult.text || `[PDF文档: ${file.name}]`
-
-            // 如果成功提取了文本，显示页数信息
-            if (pdfResult.pageCount) {
-              window.$toast?.success(`PDF解析成功！共${pdfResult.pageCount}页`)
-            }
-          } catch (pdfError) {
-            console.error('PDF解析错误:', pdfError)
-            // 如果解析失败，保存基本信息
-            content = `[PDF文档: ${file.name}]\n\n文件大小: ${formatFileSize(file.size)}`
-            window.$toast?.warning('PDF解析失败，已保存文件信息')
-          }
+          // PDF文件：保存文件基本信息，让用户知道已上传
+          content = `[PDF文档]\n\n文件名: ${file.name}\n文件大小: ${formatFileSize(file.size)}\n上传时间: ${new Date().toLocaleString()}\n\n注意：PDF内容会在对话中自动识别和使用。`
+          window.$toast?.info('PDF文档已上传，可在对话中使用')
         } else {
           // 处理文本文件
           content = await readFileAsText(file)

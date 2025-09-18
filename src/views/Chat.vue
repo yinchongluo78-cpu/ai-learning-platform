@@ -731,16 +731,16 @@ async function sendMessage() {
     // 根据 RAG 开关决定是否搜索文档
     let relevantDocs = []
     if (enableRAG.value && activeDocuments.value.length > 0) {
-      console.log('🔍 RAG检索模式: 开始搜索相关文档...')
-      console.log('📞 调用搜索相关文档函数，用户消息:', userMessage)
-      relevantDocs = await searchRelevantDocuments(userMessage)
-      console.log('📋 搜索结果返回文档数量:', relevantDocs.length)
-
-      if (relevantDocs.length > 0) {
-        console.log('📄 找到相关文档，内容预览:', relevantDocs.map(doc => doc.substring(0, 50) + '...'))
-      }
+      console.log('🔍 RAG模式: 使用已加载的文档...')
+      // 直接使用activeDocuments中的内容
+      relevantDocs = activeDocuments.value.map(doc => {
+        const docInfo = `文档: ${doc.filename}\n内容:\n${doc.content || '[文档内容]'}`
+        return docInfo
+      })
+      console.log('📋 使用文档数量:', relevantDocs.length)
+      console.log('✅ 文档内容将传递给AI')
     } else {
-      console.log('💬 纯聊天模式: 不进行文档检索')
+      console.log('💬 纯聊天模式: 不使用文档')
       console.log('🎯 当前RAG状态:', enableRAG.value, '活动文档数量:', activeDocuments.value.length)
     }
 
