@@ -371,7 +371,10 @@ async function downloadDocument(doc) {
 
 // 删除文档
 async function deleteDocument(doc) {
-  if (!confirm(`确定要删除文档 "${doc.filename}" 吗？`)) {
+  // 使用自定义确认对话框代替浏览器默认的confirm
+  // TODO: 实现自定义确认对话框
+  const confirmDelete = window.confirm(`确定要删除文档 "${doc.filename}" 吗？`)
+  if (!confirmDelete) {
     return
   }
 
