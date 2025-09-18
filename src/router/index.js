@@ -7,7 +7,8 @@ import Dashboard from '../views/Dashboard.vue'
 import Chat from '../views/Chat.vue'
 // import Knowledge from '../views/Knowledge.vue'  // 旧版本
 // import KnowledgeOSS from '../views/KnowledgeOSS.vue'  // OSS直传版本（连接超时）
-import KnowledgeSimple from '../views/KnowledgeSimple.vue'  // 简化版本：通过服务器上传
+// import KnowledgeSimple from '../views/KnowledgeSimple.vue'  // 简化版本：通过服务器上传
+import KnowledgeLocal from '../views/KnowledgeLocal.vue'  // 最简版本：无外部依赖
 import Profile from '../views/Profile.vue'
 import TestOSS from '../views/TestOSS.vue'
 import TestOSSSimple from '../views/TestOSSSimple.vue'
@@ -42,7 +43,7 @@ const routes = [
       {
         path: 'knowledge',
         name: 'Knowledge',
-        component: KnowledgeSimple  // 使用简化版本
+        component: KnowledgeLocal  // 使用最简版本
       },
       {
         path: 'profile',
