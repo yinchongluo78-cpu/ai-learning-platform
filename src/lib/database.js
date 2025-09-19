@@ -1,21 +1,33 @@
 /**
  * 数据库适配器
- * 根据环境配置自动选择Supabase或阿里云数据库
+ * 根据环境配置自动选择Supabase、LeanCloud或阿里云数据库
  */
 
 import { supabase } from './supabase.js'
 import aliyunDB from './aliyun-db.js'
+import leancloud from './leancloud.js'
 
 // 检测使用哪个数据库
+const USE_LEANCLOUD = import.meta.env.VITE_USE_LEANCLOUD === 'true'
 const USE_ALIYUN = import.meta.env.VITE_USE_ALIYUN_DB === 'true'
-const DB_PROVIDER = USE_ALIYUN ? 'aliyun' : 'supabase'
+
+let DB_PROVIDER = 'supabase'
+let database = supabase
+
+if (USE_LEANCLOUD) {
+  DB_PROVIDER = 'leancloud'
+  database = leancloud
+} else if (USE_ALIYUN) {
+  DB_PROVIDER = 'aliyun'
+  database = aliyunDB
+}
 
 console.log(`🗄️ 使用数据库: ${DB_PROVIDER}`)
 
 /**
  * 统一的数据库接口
  */
-export const database = USE_ALIYUN ? aliyunDB : supabase
+export { database }
 
 /**
  * 数据库适配器类
@@ -31,7 +43,9 @@ class DatabaseAdapter {
    * 认证相关操作
    */
   get auth() {
-    if (USE_ALIYUN) {
+    if (USE_LEANCLOUD) {
+      return database.auth
+    } else if (USE_ALIYUN) {
       return {
         signUp: async ({ email, password }) => {
           const result = await aliyunDB.auth.signUp(email, password)
@@ -105,7 +119,7 @@ class DatabaseAdapter {
     const { data: { user } } = await this.auth.getUser()
     if (!user) return null
 
-    if (USE_ALIYUN) {
+    if (USE_LEANCLOUD || USE_ALIYUN) {
       return user.id
     } else {
       // Supabase需要先查询users表
