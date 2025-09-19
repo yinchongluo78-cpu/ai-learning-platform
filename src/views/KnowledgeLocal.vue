@@ -234,6 +234,13 @@ async function loadDocuments() {
       is_my_document: doc.user_id === user.id
     }))
 
+    console.log('📚 加载的文档:', documents.value.map(doc => ({
+      id: doc.id,
+      filename: doc.filename,
+      contentLength: doc.content ? doc.content.length : 0,
+      hasContent: !!doc.content
+    })))
+
   } catch (error) {
     console.error('加载文档出错:', error)
   } finally {
@@ -313,8 +320,15 @@ async function uploadDocuments() {
           content = await readFileAsText(file)
         }
 
+        // 调试：检查内容长度
+        console.log('📝 准备保存文档:', {
+          filename: file.name,
+          contentLength: content.length,
+          contentPreview: content.substring(0, 200)
+        })
+
         // 保存到数据库
-        const { error } = await supabase
+        const { data: savedDoc, error } = await supabase
           .from('documents')
           .insert({
             user_id: user.id,
@@ -323,10 +337,19 @@ async function uploadDocuments() {
             is_public: makePublic.value,
             created_at: new Date().toISOString()
           })
+          .select()
+          .single()
 
         if (error) {
+          console.error('❌ 数据库保存失败:', error)
           throw error
         }
+
+        console.log('✅ 文档已保存到数据库:', {
+          id: savedDoc.id,
+          filename: savedDoc.filename,
+          contentLength: savedDoc.content ? savedDoc.content.length : 0
+        })
 
         window.$toast?.success(`文档 ${file.name} 上传成功`)
 
