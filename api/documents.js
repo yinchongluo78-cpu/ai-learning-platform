@@ -1,15 +1,21 @@
 /**
- * 文档管理API
+ * 文档管理API - Vercel Serverless Function
  */
 
-import { listDocuments, getDocumentInfo, deleteDocumentChunks } from './vector-store.js';
+// 模拟向量存储（实际应该使用LeanCloud）
+const mockDocuments = [];
 
-/**
- * 处理文档列表请求
- * @param {Request} req - 请求对象
- * @param {Response} res - 响应对象
- */
 export default async function handler(req, res) {
+  // 设置CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+
   switch (req.method) {
     case 'GET':
       return handleGet(req, res);
@@ -25,7 +31,8 @@ export default async function handler(req, res) {
  */
 async function handleGet(req, res) {
   try {
-    const documents = await listDocuments();
+    // 暂时返回模拟数据
+    const documents = mockDocuments;
 
     res.status(200).json({
       success: true,
@@ -53,7 +60,12 @@ async function handleDelete(req, res) {
       return res.status(400).json({ error: 'Document ID is required' });
     }
 
-    const deletedCount = await deleteDocumentChunks(doc_id);
+    // 模拟删除
+    const index = mockDocuments.findIndex(d => d.doc_id === doc_id);
+    if (index > -1) {
+      mockDocuments.splice(index, 1);
+    }
+    const deletedCount = index > -1 ? 1 : 0;
 
     res.status(200).json({
       success: true,

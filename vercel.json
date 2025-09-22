@@ -1,11 +1,25 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vue",
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/api/upload",
+      "destination": "/api/upload-simple"
+    },
+    {
+      "source": "/api/documents",
+      "destination": "/api/documents-simple"
+    },
+    {
+      "source": "/api/chat",
+      "destination": "/api/chat-simple"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
     }
   ]
 }

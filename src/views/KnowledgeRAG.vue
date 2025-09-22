@@ -296,7 +296,7 @@ async function sendMessage() {
       threshold: ragSettings.value.threshold
     }
 
-    const response = await fetch('/api/chat', {
+    const response = await fetch('/api/chat-simple', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -349,7 +349,7 @@ async function scrollToBottom() {
 // 刷新文档列表
 async function refreshDocuments() {
   try {
-    const response = await fetch('/api/documents')
+    const response = await fetch('/api/documents-simple')
     const data = await response.json()
     documents.value = data.documents || []
   } catch (error) {
@@ -362,7 +362,7 @@ async function deleteDocument(docId) {
   if (!confirm('确定要删除这个文档吗？')) return
 
   try {
-    const response = await fetch('/api/documents', {
+    const response = await fetch('/api/documents-simple', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -422,7 +422,7 @@ async function uploadFiles() {
       const file = selectedFiles.value[i]
       const content = await readFileContent(file)
 
-      await fetch('/api/upload', {
+      await fetch('/api/upload-simple', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
