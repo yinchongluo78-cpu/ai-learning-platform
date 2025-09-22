@@ -1,9 +1,18 @@
 /**
- * 简化版文档上传API - 用于测试
+ * 简化版文档上传API - 使用内存存储和简单文本匹配
+ * 适用于Vercel部署
  */
 
-// 内存中存储文档（仅用于演示）
-let documents = [];
+const crypto = require('crypto');
+
+// 初始化存储
+if (!global.documentStore) {
+  global.documentStore = new Map();
+}
+
+if (!global.vectorStore) {
+  global.vectorStore = new Map();
+}
 
 export default async function handler(req, res) {
   // 设置CORS
@@ -22,51 +31,35 @@ export default async function handler(req, res) {
   try {
     const { file_name, content, file_type } = req.body;
 
+    // 参数验证
     if (!file_name || !content) {
       return res.status(400).json({ error: 'File name and content are required' });
     }
 
     // 生成文档ID
-    const docId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+    const docId = generateDocId(file_name);
 
     // 简单的文档切片（每500字符一片）
-    const chunkSize = 500;
-    const chunks = [];
-
-    for (let i = 0; i < content.length; i += chunkSize) {
-      chunks.push({
-        id: `${docId}_${i}`,
-        doc_id: docId,
-        content: content.substring(i, i + chunkSize),
-        file_name: file_name,
-        page: Math.floor(i / chunkSize) + 1,
-        chunk_index: chunks.length
-      });
-    }
+    const chunks = chunkText(content, file_name, docId);
 
     // 存储文档信息
-    const docInfo = {
+    global.documentStore.set(docId, {
       doc_id: docId,
       file_name: file_name,
-      file_type: file_type || 'text',
       chunk_count: chunks.length,
-      created_at: new Date().toISOString(),
-      chunks: chunks
-    };
+      created_at: new Date().toISOString()
+    });
 
-    // 简单存储在全局变量（实际应存到数据库）
-    global.documents = global.documents || [];
-    global.documents.push(docInfo);
+    // 存储文档片段
+    global.vectorStore.set(docId, chunks);
 
+    // 返回处理结果
     res.status(200).json({
       success: true,
       doc_id: docId,
       file_name: file_name,
       chunks_created: chunks.length,
-      summary: {
-        total_characters: content.length,
-        pages: chunks.length
-      }
+      message: '文档上传成功'
     });
 
   } catch (error) {
@@ -77,4 +70,47 @@ export default async function handler(req, res) {
       message: error.message
     });
   }
+}
+
+// 生成文档ID
+function generateDocId(fileName) {
+  const hash = crypto.createHash('md5');
+  hash.update(fileName + Date.now().toString());
+  return hash.digest('hex').substring(0, 16);
+}
+
+// 简单的文本切片
+function chunkText(text, fileName, docId) {
+  const CHUNK_SIZE = 500; // 每片500字符
+  const OVERLAP = 50; // 重叠50字符
+  const chunks = [];
+
+  // 清理文本
+  text = text.replace(/\s+/g, ' ').trim();
+
+  let start = 0;
+  let chunkIndex = 0;
+
+  while (start < text.length) {
+    const end = Math.min(start + CHUNK_SIZE, text.length);
+    const chunkContent = text.substring(start, end);
+
+    chunks.push({
+      content: chunkContent,
+      metadata: {
+        doc_id: docId,
+        file_name: fileName,
+        chunk_index: chunkIndex++,
+        page: Math.floor(start / 3000) + 1, // 估算页码
+        start_pos: start,
+        end_pos: end
+      }
+    });
+
+    // 下一片从重叠位置开始
+    start = end - OVERLAP;
+    if (start >= text.length - OVERLAP) break;
+  }
+
+  return chunks;
 }
