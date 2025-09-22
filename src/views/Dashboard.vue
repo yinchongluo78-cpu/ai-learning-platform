@@ -17,9 +17,19 @@
           <span>学习对话</span>
         </router-link>
 
+        <router-link to="/dashboard/knowledge-rag" class="nav-item" active-class="active">
+          <div class="nav-icon">🎓</div>
+          <span>RAG知识库</span>
+        </router-link>
+
+        <router-link to="/dashboard/rag" class="nav-item" active-class="active">
+          <div class="nav-icon">🤖</div>
+          <span>超级学霸</span>
+        </router-link>
+
         <router-link to="/dashboard/knowledge" class="nav-item" active-class="active">
           <div class="nav-icon">📚</div>
-          <span>知识库</span>
+          <span>普通知识库</span>
         </router-link>
 
         <router-link to="/dashboard/profile" class="nav-item" active-class="active">

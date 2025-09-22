@@ -9,9 +9,11 @@ const Chat = () => import('../views/Chat.vue')
 // import KnowledgeOSS from '../views/KnowledgeOSS.vue'  // OSS直传版本（连接超时）
 // import KnowledgeSimple from '../views/KnowledgeSimple.vue'  // 简化版本：通过服务器上传
 const KnowledgeLocal = () => import('../views/KnowledgeLocal.vue')  // 最简版本：无外部依赖
+const KnowledgeRAG = () => import('../views/KnowledgeRAG.vue')  // RAG知识库系统
 const Profile = () => import('../views/Profile.vue')
 const TestOSS = () => import('../views/TestOSS.vue')
 const TestOSSSimple = () => import('../views/TestOSSSimple.vue')
+const RAGChat = () => import('../views/RAGChat.vue')  // RAG聊天界面
 
 const routes = [
   {
@@ -44,6 +46,16 @@ const routes = [
         path: 'knowledge',
         name: 'Knowledge',
         component: KnowledgeLocal  // 使用最简版本
+      },
+      {
+        path: 'rag',
+        name: 'RAGChat',
+        component: RAGChat  // RAG精准问答
+      },
+      {
+        path: 'knowledge-rag',
+        name: 'KnowledgeRAG',
+        component: KnowledgeRAG  // RAG知识库系统
       },
       {
         path: 'profile',
