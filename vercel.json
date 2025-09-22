@@ -1,25 +1,7 @@
 {
   "functions": {
-    "api/*.js": {
+    "api/rag.js": {
       "maxDuration": 30
     }
-  },
-  "rewrites": [
-    {
-      "source": "/api/upload",
-      "destination": "/api/upload-simple"
-    },
-    {
-      "source": "/api/documents",
-      "destination": "/api/documents-simple"
-    },
-    {
-      "source": "/api/chat",
-      "destination": "/api/chat-simple"
-    },
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    }
-  ]
+  }
 }
