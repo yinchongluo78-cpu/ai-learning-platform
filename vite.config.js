@@ -14,8 +14,6 @@ export default defineConfig({
           'vendor-vue': ['vue', 'vue-router'],
           // Supabase相关
           'vendor-supabase': ['@supabase/supabase-js'],
-          // PDF处理
-          'vendor-pdf': ['pdfjs-dist'],
           // Markdown和代码高亮
           'vendor-markdown': ['marked', 'marked-highlight', 'highlight.js'],
           // OSS上传（如果需要）
@@ -59,8 +57,6 @@ export default defineConfig({
       'vue-router',
       '@supabase/supabase-js'
     ],
-    exclude: [
-      'pdfjs-dist' // PDF.js懒加载，不预构建
-    ]
+    exclude: []
   }
 })

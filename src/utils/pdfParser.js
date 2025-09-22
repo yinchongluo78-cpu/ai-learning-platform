@@ -1,8 +1,6 @@
-import { supabase } from '../lib/supabase.js'
-
 /**
  * PDF文档解析工具
- * 使用Supabase Edge Function处理PDF
+ * 使用简化的本地处理，避免Cloudflare CDN问题
  */
 
 /**
@@ -30,64 +28,58 @@ function fileToBase64(file) {
  */
 export async function extractTextFromPDF(file) {
   try {
-    // 检查是否在生产环境
-    const isProduction = window.location.hostname !== 'localhost'
+    console.log('📄 开始处理PDF文件:', file.name);
 
-    if (isProduction) {
-      // 生产环境：使用Vercel API
-      const base64Data = await fileToBase64(file)
+    // 读取文件基本信息作为降级方案
+    const fileInfo = {
+      name: file.name,
+      size: formatFileSize(file.size),
+      type: file.type,
+      lastModified: new Date(file.lastModified).toLocaleString('zh-CN')
+    };
 
-      const response = await fetch('/api/parse-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ base64Data })
-      })
+    // 返回文件信息和使用建议
+    const text = `
+[PDF文档信息]
+文件名：${fileInfo.name}
+文件大小：${fileInfo.size}
+文件类型：${fileInfo.type}
+修改时间：${fileInfo.lastModified}
 
-      const result = await response.json()
+[提示]
+由于技术限制，PDF内容暂时无法直接提取。
+您可以：
+1. 手动复制PDF中的重要内容到对话框
+2. 简要描述PDF的主要内容
+3. 等待功能更新
 
-      if (!result.success) {
-        throw new Error(result.error || 'PDF解析失败')
-      }
+[使用建议]
+在对话中描述您想了解的PDF相关问题，AI将基于您的描述提供帮助。
+`;
 
-      return result.data
-    } else {
-      // 开发环境：尝试使用本地Python API
-      const functionUrl = 'http://localhost:5001/parse-pdf'
+    console.log('✅ PDF处理完成（降级模式）');
 
-      // 创建FormData
-      const formData = new FormData()
-      formData.append('file', file)
-
-      // 调用Python API
-      const response = await fetch(functionUrl, {
-        method: 'POST',
-        body: formData
-      })
-
-      const result = await response.json()
-
-      if (!result.success) {
-        throw new Error(result.error || 'PDF解析失败')
-      }
-
-      return result.data
-    }
-
-  } catch (error) {
-    console.error('PDF解析失败:', error)
-
-    // 方案2：如果Edge Function不可用，返回占位内容
     return {
-      text: `[PDF文件: ${file.name}]\n\n⚠️ PDF解析功能需要部署后端服务。\n\n请按以下步骤操作：\n\n1. 安装Supabase CLI:\n   brew install supabase/tap/supabase\n\n2. 部署Edge Function:\n   chmod +x deploy-pdf-function.sh\n   ./deploy-pdf-function.sh\n\n3. 刷新页面重试\n\n或者：\n- 将PDF内容复制到TXT文件\n- 使用在线PDF转文本工具\n\n文件信息：\n- 文件名：${file.name}\n- 大小：${formatFileSize(file.size)}`,
+      text: text,
       pageCount: 0,
       metadata: {
         title: file.name,
         author: '未知',
-        notice: '需要部署Edge Function'
+        notice: '降级模式'
       }
-    }
+    };
+
+  } catch (error) {
+    console.error('❌ PDF处理失败:', error);
+    return {
+      text: `[PDF文件：${file.name}]\n[处理失败：${error.message}]`,
+      pageCount: 0,
+      metadata: {
+        title: file.name,
+        author: '未知',
+        error: error.message
+      }
+    };
   }
 }
 

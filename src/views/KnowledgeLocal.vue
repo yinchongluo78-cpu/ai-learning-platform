@@ -161,7 +161,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { supabase } from '../lib/supabase.js'
 import { useRouter } from 'vue-router'
-import extractTextFromPDF from '../utils/pdfExtractorLocal.js'
+import extractTextFromPDF from '../utils/simplePdfExtractor.js'
 
 const router = useRouter()
 

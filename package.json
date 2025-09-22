@@ -17,7 +17,6 @@
     "leancloud-storage": "^4.15.2",
     "marked": "^16.3.0",
     "marked-highlight": "^2.2.2",
-    "pdfjs-dist": "^5.4.149",
     "pg": "^8.16.3",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1"
