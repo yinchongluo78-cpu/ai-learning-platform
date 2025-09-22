@@ -161,7 +161,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { supabase } from '../lib/supabase.js'
 import { useRouter } from 'vue-router'
-import { extractPDFText, isPDFFile } from '../utils/pdfExtractor.js'
+import extractTextFromPDF from '../utils/pdfExtractorLocal.js'
 
 const router = useRouter()
 
@@ -297,11 +297,11 @@ async function uploadDocuments() {
         // 读取文件内容
         let content = ''
 
-        if (isPDFFile(file)) {
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
           // PDF文件：提取文本内容
           try {
             window.$toast?.info(`正在解析PDF文档...`)
-            content = await extractPDFText(file)
+            content = await extractTextFromPDF(file)
 
             // 如果内容太短，说明可能是扫描版PDF
             if (content.length < 100) {
