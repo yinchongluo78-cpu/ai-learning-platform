@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG文档上传测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            background: #fafafa;
+        }
+        .upload-area.dragover {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #5a67d8;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .status.info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .test-content {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff3e0;
+            border-radius: 5px;
+        }
+        .test-content h3 {
+            margin-top: 0;
+            color: #e65100;
+        }
+        .test-content textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 RAG文档上传测试</h1>
+
+        <div class="status info" id="status">
+            准备就绪，请选择文件或使用测试内容
+        </div>
+
+        <div class="test-content">
+            <h3>测试内容（用于快速测试）</h3>
+            <textarea id="testContent">人工智能基础知识
+
+第一章：什么是人工智能
+人工智能（Artificial Intelligence，简称AI）是计算机科学的一个分支，它企图了解智能的实质，并生产出一种新的能以人类智能相似的方式做出反应的智能机器。
+
+第二章：机器学习
+机器学习是人工智能的核心，是使计算机具有智能的根本途径。
+
+第三章：深度学习
+深度学习是机器学习的一个分支。深度学习的概念源于人工神经网络的研究。
+
+应用领域：
+1. 计算机视觉
+2. 自然语言处理
+3. 语音识别
+4. 推荐系统</textarea>
+            <button class="btn" onclick="uploadTestContent()">上传测试内容</button>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" accept=".txt,.md,.pdf,.docx" multiple>
+            <button class="btn" onclick="document.getElementById('fileInput').click()">
+                选择文件
+            </button>
+            <p>或拖拽文件到此处</p>
+            <small>支持 TXT, MD, PDF, DOCX 格式</small>
+        </div>
+
+        <button class="btn" onclick="testConnection()">测试连接</button>
+        <button class="btn" onclick="listDocuments()">查看已上传文档</button>
+        <button class="btn" onclick="testSearch()">测试搜索</button>
+
+        <div class="results" id="results" style="display: none;">
+            <h3>处理结果：</h3>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // 配置
+        const API_BASE_URL = 'http://localhost:3001';  // 本地测试服务器
+
+        // 拖拽处理
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const statusDiv = document.getElementById('status');
+        const resultsDiv = document.getElementById('results');
+        const resultContent = document.getElementById('resultContent');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        // 处理文件
+        async function handleFiles(files) {
+            for (const file of files) {
+                await uploadFile(file);
+            }
+        }
+
+        // 上传文件
+        async function uploadFile(file) {
+            updateStatus(`正在上传: ${file.name}...`, 'info');
+
+            try {
+                const content = await readFileContent(file);
+
+                const response = await fetch(`${API_BASE_URL}/api/rag?action=upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        file_name: file.name,
+                        content: content,
+                        file_type: getFileType(file.name)
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    updateStatus(`✅ 上传成功: ${file.name}`, 'success');
+                    showResults(result);
+                } else {
+                    updateStatus(`❌ 上传失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ 错误: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // 上传测试内容
+        async function uploadTestContent() {
+            const content = document.getElementById('testContent').value;
+            const testFile = new File([content], 'test-content.txt', { type: 'text/plain' });
+            await uploadFile(testFile);
+        }
+
+        // 读取文件内容
+        function readFileContent(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+
+        // 获取文件类型
+        function getFileType(fileName) {
+            const ext = fileName.split('.').pop().toLowerCase();
+            return ext === 'pdf' ? 'pdf' : 'text';
+        }
+
+        // 测试连接
+        async function testConnection() {
+            updateStatus('测试连接中...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/rag?action=test`);
+                const result = await response.json();
+
+                if (result.success) {
+                    updateStatus('✅ 连接成功！', 'success');
+                    showResults(result);
+                } else {
+                    updateStatus('❌ 连接失败', 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ 连接错误: ${error.message}`, 'error');
+            }
+        }
+
+        // 查看文档列表
+        async function listDocuments() {
+            updateStatus('获取文档列表...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/rag?action=list`);
+                const result = await response.json();
+
+                if (result.success) {
+                    updateStatus(`✅ 找到 ${result.documents.length} 个文档`, 'success');
+                    showResults(result);
+                } else {
+                    updateStatus('❌ 获取失败', 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ 错误: ${error.message}`, 'error');
+            }
+        }
+
+        // 测试搜索
+        async function testSearch() {
+            const query = prompt('请输入搜索内容：', '人工智能');
+            if (!query) return;
+
+            updateStatus(`搜索: "${query}"...`, 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/rag?action=search`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        top_k: 3,
+                        threshold: 0.7
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    updateStatus(`✅ 找到 ${result.results.length} 个结果`, 'success');
+                    showResults(result);
+                } else {
+                    updateStatus('❌ 搜索失败', 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ 错误: ${error.message}`, 'error');
+            }
+        }
+
+        // 更新状态
+        function updateStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // 显示结果
+        function showResults(data) {
+            resultsDiv.style.display = 'block';
+            resultContent.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // 页面加载时测试连接
+        window.addEventListener('load', () => {
+            testConnection();
+        });
+    </script>
+</body>
+</html>

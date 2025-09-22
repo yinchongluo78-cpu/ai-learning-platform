@@ -453,21 +453,8 @@ async function uploadFiles() {
   }
 }
 
-// 读取文件内容
-function readFileContent(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = e => resolve(e.target.result)
-    reader.onerror = reject
-    reader.readAsText(file)
-  })
-}
-
-// 获取文件类型
-function getFileType(fileName) {
-  const ext = fileName.split('.').pop().toLowerCase()
-  return ext === 'pdf' ? 'pdf' : 'text'
-}
+// 导入文件读取工具
+import { readFileContent, getFileType } from '../utils/fileReader.js'
 
 // 组件挂载
 onMounted(() => {
