@@ -12,41 +12,11 @@ async function loadPDFJS() {
     // 动态导入PDF.js
     pdfjsLib = await import('pdfjs-dist');
 
-    // 配置PDF.js worker - 使用国内CDN，避免Cloudflare
-    const version = pdfjsLib.version || '5.4.149';
-    const cdnUrls = [
-      // 国内CDN（优先）- 使用固定版本避免动态版本问题
-      `https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build/pdf.worker.min.js`,
-      `https://unpkg.com/pdfjs-dist@5.4.149/build/pdf.worker.min.js`,
-      `https://registry.npmmirror.com/pdfjs-dist/5.4.149/files/build/pdf.worker.min.js`,
-      // 本地备用worker
-      '/pdf.worker.min.js'
-    ];
+    // 立即设置worker路径，防止默认加载Cloudflare
+    // 使用本地worker文件，避免任何CDN问题
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
-    // 尝试加载可用的CDN
-    let workerLoaded = false;
-    for (const url of cdnUrls) {
-      try {
-        // 测试URL是否可访问
-        if (url.startsWith('http')) {
-          const testResponse = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
-        }
-        pdfjsLib.GlobalWorkerOptions.workerSrc = url;
-        console.log(`✅ 使用PDF.js Worker: ${url}`);
-        workerLoaded = true;
-        break;
-      } catch (error) {
-        console.warn(`⚠️ Worker源不可用: ${url}`);
-      }
-    }
-
-    // 如果所有CDN都失败，使用内联worker
-    if (!workerLoaded) {
-      console.warn('⚠️ 所有CDN都无法访问，使用降级模式');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = null;
-    }
-
-    console.log('PDF.js已动态加载');
+    console.log('✅ PDF.js已加载，使用本地Worker');
   }
   return pdfjsLib;
 }
