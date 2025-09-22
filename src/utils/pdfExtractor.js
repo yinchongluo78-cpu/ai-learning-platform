@@ -12,13 +12,15 @@ async function loadPDFJS() {
     // 动态导入PDF.js
     pdfjsLib = await import('pdfjs-dist');
 
-    // 配置PDF.js worker - 使用多个CDN源，优先使用国内CDN
+    // 配置PDF.js worker - 使用国内CDN，避免Cloudflare
+    const version = pdfjsLib.version || '5.4.149';
     const cdnUrls = [
-      // 国内CDN（优先）
-      `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`,
-      `https://registry.npmmirror.com/pdfjs-dist/${pdfjsLib.version}/files/build/pdf.worker.min.js`,
+      // 国内CDN（优先）- 使用固定版本避免动态版本问题
+      `https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.149/build/pdf.worker.min.js`,
+      `https://unpkg.com/pdfjs-dist@5.4.149/build/pdf.worker.min.js`,
+      `https://registry.npmmirror.com/pdfjs-dist/5.4.149/files/build/pdf.worker.min.js`,
       // 本地备用worker
-      '/pdf-worker.js'
+      '/pdf.worker.min.js'
     ];
 
     // 尝试加载可用的CDN
