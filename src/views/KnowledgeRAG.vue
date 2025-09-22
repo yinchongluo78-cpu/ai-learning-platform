@@ -213,6 +213,9 @@
 import { ref, onMounted, nextTick } from 'vue'
 import { marked } from 'marked'
 
+// API配置 - 开发环境使用本地测试服务器
+const API_BASE = import.meta.env.DEV ? 'http://localhost:3001' : ''
+
 // 状态管理
 const messages = ref([])
 const inputMessage = ref('')
@@ -296,7 +299,7 @@ async function sendMessage() {
       threshold: ragSettings.value.threshold
     }
 
-    const response = await fetch('/api/rag?action=chat', {
+    const response = await fetch(`${API_BASE}/api/rag?action=chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -349,7 +352,7 @@ async function scrollToBottom() {
 // 刷新文档列表
 async function refreshDocuments() {
   try {
-    const response = await fetch('/api/rag?action=documents')
+    const response = await fetch(`${API_BASE}/api/rag?action=documents`)
     const data = await response.json()
     documents.value = data.documents || []
   } catch (error) {
@@ -362,7 +365,7 @@ async function deleteDocument(docId) {
   if (!confirm('确定要删除这个文档吗？')) return
 
   try {
-    const response = await fetch('/api/rag?action=documents', {
+    const response = await fetch(`${API_BASE}/api/rag?action=documents`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -422,7 +425,7 @@ async function uploadFiles() {
       const file = selectedFiles.value[i]
       const content = await readFileContent(file)
 
-      await fetch('/api/rag?action=upload', {
+      await fetch(`${API_BASE}/api/rag?action=upload`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

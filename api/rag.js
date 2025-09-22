@@ -3,7 +3,7 @@
  * 解决Vercel Hobby计划的12个函数限制
  */
 
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 // 初始化内存存储
 if (!global.documentStore) {
